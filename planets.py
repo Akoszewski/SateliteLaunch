@@ -32,25 +32,31 @@ class System:
             print("\tperiod = ", planet.period)
             i = i + 1
             
-    def draw(self):
+    def draw(self, time, isAnimation):
         rx = 800
         ry = 600
         r = 0.45 * ry
-        # self.planets[-1].r
-        # set_fill_color(Color.LIGHT_BLUE)
         init_graph(rx, ry)
+        set_render_mode(RenderMode.RENDER_MANUAL)
         set_fill_color(Color.BLACK)
+        while is_run():
+            if delay_jfps(40):
+                clear_device()
+                self.drawFrame(rx, ry, time)
+                if isAnimation:
+                    time = time + 1
+        close_graph()
+
+    def drawFrame(self, rx, ry, time):
         for p in self.planets:
             r = p.r*(0.45*ry/self.planets[-1].r)
             circle(rx/2, ry/2, r)
-            draw_circle(rx/2 + r*math.cos(p.theta*2*math.pi), ry/2 + r*math.sin(p.theta*2*math.pi), 5)
-        while is_run():
-            x = 1
-        close_graph()
+            theta = p.calculateTheta(time)
+            draw_circle(rx/2 + r*math.cos(theta*2*math.pi), ry/2 + r*math.sin(theta*2*math.pi), 5)
 
 system = System(5, 1.618)
 system.print()
-system.draw()
-# for t in range(80):s
+system.draw(0, isAnimation = True)
+# for t in range(80):
 for i in range(len(system.planets)):
     print(round(system.planets[i].calculateTheta(1556), 3))
