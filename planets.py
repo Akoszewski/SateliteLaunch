@@ -12,7 +12,7 @@ class Planet:
         self.period = round(math.sqrt(c * r**3)) # from Third Kepler's Law
 
     def calculateTheta(self, time):
-        return (self.theta + time/self.period*maxTheta) % maxTheta
+        return (self.theta + time/self.period * maxTheta) % maxTheta
 
 class System:
     planets = []
@@ -36,32 +36,51 @@ class Simulation:
     def __init__(self, system):
         self.system = system
 
-    def run(self, time, angle, speed, origin):
+    def run(self, satellite, time):
+        self.satellite = satellite
         rx = 800
         ry = 600
         r = 0.45 * ry
-        isAnimation = True
+        isAnimation = False
         init_graph(rx, ry)
         set_render_mode(RenderMode.RENDER_MANUAL)
         set_fill_color(Color.BLACK)
+        trace = []
         while is_run():
             if delay_jfps(40):
+                if has_kb_hit():
+                    isAnimation = True
                 clear_device()
-                self.__drawFrame(rx, ry, time)
+                self.__drawFrame(rx, ry, time, trace)
                 if isAnimation:
                     time = time + 1
         close_graph()
 
-    def __drawFrame(self, rx, ry, time):
+    def __drawFrame(self, rx, ry, time, trace):
         for p in self.system.planets:
             r = p.r*(0.45*ry/self.system.planets[-1].r)
             circle(rx/2, ry/2, r)
             theta = p.calculateTheta(time)
             draw_circle(rx/2 + r*math.cos(theta), ry/2 + r*math.sin(theta), 5)
+        trace.append(self.satellite.calculatePosition(time))
+        for pos in trace:
+            [r, theta] = pos
+            r = r*(0.45*ry/self.system.planets[-1].r)
+            draw_circle(rx/2 + r*math.cos(theta), ry/2 + r*math.sin(theta), 1)
+
+class Satellite:
+    def __init__(self, r, theta, speed, angle):
+        self.r = r
+        self.theta = theta
+        self.speed = speed
+
+    def calculatePosition(self, time):
+        return [self.r + self.speed * time, self.theta]
 
 system = System(5, 1.618)
 simulation = Simulation(system)
-simulation.run(time = 0, angle = 0, speed = 1, origin = 2)
+satellite = Satellite(system.planets[0].r, system.planets[0].theta, speed = 1, angle = 0)
+simulation.run(satellite, time = 0)
 #system.print()
 # for t in range(80):
 # for i in range(len(system.planets)):
