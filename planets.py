@@ -7,25 +7,25 @@ class Planet:
         self.theta = theta
         c = 0.06
         self.period = round(math.sqrt(c * r**3)) # from Third Kepler's Law
-    
-def generatePlanets(num, factor):
-    planets = []
-    r = 50
-    for i in range(num):
-        theta = round(random.uniform(0, 2 * math.pi), 3)
-        planets.append(Planet(r, theta))
-        r = round(r * factor)
-    return planets
 
-def printPlanets(planets):
-    i = 1
-    for planet in planets:
-        print("Planet " + str(i) + ":")
-        print("\tr = ", planet.r)
-        print("\ttheta = ", planet.theta)
-        print("\tperiod = ", planet.period)
-        i = i + 1
+class System:
+    planets = []
+    def __init__(self, num, factor):
+        r = 50
+        for i in range(num):
+            theta = round(random.uniform(0, 2 * math.pi), 3)
+            self.planets.append(Planet(r, theta))
+            r = round(r * factor)
+
+    def print(self):
+        i = 1
+        for planet in self.planets:
+            print("Planet " + str(i) + ":")
+            print("\tr = ", planet.r)
+            print("\ttheta = ", planet.theta)
+            print("\tperiod = ", planet.period)
+            i = i + 1
 
 t = 0
-planets = generatePlanets(9, 1.618)
-printPlanets(planets)
+planets = System(9, 1.618)
+planets.print()
