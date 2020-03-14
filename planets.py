@@ -33,40 +33,44 @@ class System:
             i = i + 1
 
 class Simulation:
+    rx = 800
+    ry = 600
+    trace = [] # satellite trace
     def __init__(self, system):
         self.system = system
 
     def run(self, satellite, time):
         self.satellite = satellite
-        rx = 800
-        ry = 600
-        r = 0.45 * ry
+        r = 0.45 * self.ry
         isAnimation = False
-        init_graph(rx, ry)
+        init_graph(self.rx, self.ry)
         set_render_mode(RenderMode.RENDER_MANUAL)
         set_fill_color(Color.BLACK)
-        trace = []
         while is_run():
             if delay_jfps(40):
                 if has_kb_hit():
                     isAnimation = True
                 clear_device()
-                self.__drawFrame(rx, ry, time, trace)
+                self.__drawFrame(time)
                 if isAnimation:
                     time = time + 1
         close_graph()
 
-    def __drawFrame(self, rx, ry, time, trace):
+    def calcPxRadius(self, r):
+        return r * (0.45 * self.ry / self.system.planets[-1].r)
+
+    def __drawFrame(self, time):
         for p in self.system.planets:
-            r = p.r*(0.45*ry/self.system.planets[-1].r)
-            circle(rx/2, ry/2, r)
+            r = self.calcPxRadius(p.r)
+            circle(self.rx/2, self.ry/2, r)
             theta = p.calculateTheta(time)
-            draw_circle(rx/2 + r*math.cos(theta), ry/2 + r*math.sin(theta), 5)
-        trace.append(self.satellite.calculatePosition(time))
-        for pos in trace:
+            draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 5)
+        if self.satellite.speed != 0:
+            self.trace.append(self.satellite.calculatePosition(time))
+        for pos in self.trace:
             [r, theta] = pos
-            r = r*(0.45*ry/self.system.planets[-1].r)
-            draw_circle(rx/2 + r*math.cos(theta), ry/2 + r*math.sin(theta), 1)
+            r = self.calcPxRadius(r)
+            draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 1)
 
 class Satellite:
     def __init__(self, r, theta, speed, angle):
