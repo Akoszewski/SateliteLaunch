@@ -1,6 +1,7 @@
 import math
 import random
 from easygraphics import *
+import matplotlib.pyplot as plt
 
 maxTheta = 2*math.pi
 
@@ -48,6 +49,7 @@ class Simulation:
         set_fill_color(Color.BLACK)
         while is_run():
             if delay_jfps(40):
+                # dists.append(round(calcDistance(self.system.planets[1].r, self.system.planets[1].calculateTheta(time), self.system.planets[3].r, self.system.planets[3].calculateTheta(time)), 3))
                 if has_kb_hit():
                     isAnimation = True
                 clear_device()
@@ -67,10 +69,10 @@ class Simulation:
             draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 5)
         if self.satellite.speed != 0:
             self.trace.append(self.satellite.calculatePosition(time))
-        for pos in self.trace:
-            [r, theta] = pos
-            r = self.calcPxRadius(r)
-            draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 1)
+            for pos in self.trace:
+                [r, theta] = pos
+                r = self.calcPxRadius(r)
+                draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 1)
 
 class Satellite:
     def __init__(self, r, theta, speed, angle):
@@ -81,11 +83,15 @@ class Satellite:
     def calculatePosition(self, time):
         return [self.r + self.speed * time, self.theta]
 
+def calcDistance(r1, theta1, r2, theta2):
+    return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(abs(theta2 - theta1)))
+
 system = System(5, 1.618)
 simulation = Simulation(system)
 satellite = Satellite(system.planets[0].r, system.planets[0].theta, speed = 1, angle = 0)
 simulation.run(satellite, time = 0)
-#system.print()
-# for t in range(80):
-# for i in range(len(system.planets)):
-    # print(round(system.planets[i].calculateTheta(1556), 3))
+
+# plt.plot(dists)
+# plt.ylabel('time')
+# plt.ylabel('distance')
+# plt.show()
