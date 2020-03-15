@@ -60,21 +60,23 @@ class Animation:
                     draw_text(30, 30, 'Press any key to animate')
         close_graph()
 
-    def calcPxRadius(self, r):
+    def distanceToPixels(self, r):
         return r * (0.45 * self.ry / self.system.planets[-1].r)
 
     def __drawFrame(self, time):
         for p in self.system.planets:
-            r = self.calcPxRadius(p.r)
+            r = self.distanceToPixels(p.r)
             circle(self.rx/2, self.ry/2, r)
             theta = p.calculateTheta(time)
-            draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 5)
-        if self.satellite.vr != 0 and self.calcPxRadius(self.satellite.r) < self.rx: # optimization
+            [x, y] = convToCartesian(r, theta)
+            draw_circle(self.rx/2 + x, self.ry/2 + y, 5)
+        if self.satellite.vr != 0 and self.distanceToPixels(self.satellite.r) < self.rx: # optimization
             self.trace.append(self.satellite.calculatePosition(time))
         for pos in self.trace:
-            [r, theta] = pos
-            r = self.calcPxRadius(r)
-            draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 1)
+            [x, y] = pos
+            x = self.distanceToPixels(x)
+            y = self.distanceToPixels(y)
+            draw_circle(self.rx/2 + x, self.ry/2 + y, 1)
 
 class Satellite:
     def __init__(self, planet, speed, angle):
@@ -84,10 +86,17 @@ class Satellite:
         self.vth = 2*math.pi/planet.period
 
     def calculatePosition(self, time):
-        return [self.r + self.vr * time, self.theta + self.vth * time]
+        [x, y] = convToCartesian(self.r, self.theta)
+        vx = self.vr*math.cos(self.theta) - self.r*self.vth*math.sin(self.theta)
+        vy = self.vr*math.sin(self.theta) + self.r*self.vth*math.cos(self.theta)
+        print(math.sqrt(vx**2+vy**2))
+        return [x + vx*time, y + vy*time]
 
 def calcDistance(r1, theta1, r2, theta2):
     return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(abs(theta2 - theta1)))
+
+def convToCartesian(r, theta):
+    return [r * math.cos(theta), r * math.sin(theta)]
 
 system = System(5, 1.618)
 satellite = Satellite(system.planets[2], speed = 1, angle = 0)
