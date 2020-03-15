@@ -33,7 +33,7 @@ class System:
             print("\tperiod = ", planet.period)
             i = i + 1
 
-class Simulation:
+class Animation:
     rx = 800
     ry = 600
     trace = [] # satellite trace
@@ -56,6 +56,8 @@ class Simulation:
                 self.__drawFrame(time)
                 if isAnimation:
                     time = time + 1
+                else:
+                    draw_text(30, 30, 'Press any key to animate')
         close_graph()
 
     def calcPxRadius(self, r):
@@ -67,29 +69,30 @@ class Simulation:
             circle(self.rx/2, self.ry/2, r)
             theta = p.calculateTheta(time)
             draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 5)
-        if self.satellite.speed != 0:
+        if self.satellite.vr != 0 and self.calcPxRadius(self.satellite.r) < self.rx: # optimization
             self.trace.append(self.satellite.calculatePosition(time))
-            for pos in self.trace:
-                [r, theta] = pos
-                r = self.calcPxRadius(r)
-                draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 1)
+        for pos in self.trace:
+            [r, theta] = pos
+            r = self.calcPxRadius(r)
+            draw_circle(self.rx/2 + r*math.cos(theta), self.ry/2 + r*math.sin(theta), 1)
 
 class Satellite:
-    def __init__(self, r, theta, speed, angle):
-        self.r = r
-        self.theta = theta
-        self.speed = speed
+    def __init__(self, planet, speed, angle):
+        self.r = planet.r
+        self.theta = planet.theta
+        self.vr = speed
+        self.vth = 2*math.pi/planet.period
 
     def calculatePosition(self, time):
-        return [self.r + self.speed * time, self.theta]
+        return [self.r + self.vr * time, self.theta + self.vth * time]
 
 def calcDistance(r1, theta1, r2, theta2):
     return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(abs(theta2 - theta1)))
 
 system = System(5, 1.618)
-simulation = Simulation(system)
-satellite = Satellite(system.planets[0].r, system.planets[0].theta, speed = 1, angle = 0)
-simulation.run(satellite, time = 0)
+satellite = Satellite(system.planets[2], speed = 1, angle = 0)
+Animation = Animation(system)
+Animation.run(satellite, time = 0)
 
 # plt.plot(dists)
 # plt.ylabel('time')
