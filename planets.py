@@ -2,8 +2,10 @@ import math
 import random
 import json
 import os
+import numpy as np
 from easygraphics import *
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 maxTheta = 2*math.pi
 planetRadius = 0.012
@@ -76,7 +78,8 @@ class Animation:
                 clear_device()
                 self.__drawFrame(time)
                 if isAnimation:
-                    print(calculateDistance(satellite, self.system.planets[2], time))
+                    print(calculateDistance(satellite, self.system.planets[3], time))
+                    print(time)
                     time = time + 1
                 else:
                     draw_text(30, 30, 'Press any key to animate')
@@ -121,8 +124,44 @@ def calculateDistance(satelite, planet, time):
         - planet.r*math.cos(planet_angle))**2 + (satelite.r*math.sin(satelite.theta) + 
         satelite.vr*math.sin(satelite.theta) - planet.r*math.sin(planet_angle))**2)
 
+def gradientDescent(x0, step):
+    t = 0
+    d = 0
+    times = []
+    distances = []
+    velocities = []
+    satelite = Satellite(system.planets[1], speed = 0.2, angle = 0)
+    while t < 1000:
+        vel = 0.01
+        dists = []
+        vels = []
+        tms = []
+        while vel < 2:
+            satelite.vr = vel
+            d = calculateDistance(satelite, system.planets[3], t)
+            # print("t = " + str(t) + " d = " + str(d))
+            tms.append(t)
+            dists.append(d)
+            vels.append(vel)
+            vel = vel + step*0.05
+            # print("vel = " + str(vel))
+        distances.append(dists)
+        velocities.append(vels)
+        times.append(tms)
+        t = t + step
+        # print("t = " + str(t) + " d = " + str(d))
+    # plt.plot(data)
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot_surface(np.array(times), np.array(velocities), np.array(distances))
+    # plt.xlabel('time')
+    # plt.ylabel('distance')
+    plt.show()
+
+
 system = System(5, 1.618)
-satellite = Satellite(system.planets[2], speed = 0, angle = 0)
+satellite = Satellite(system.planets[1], speed = 1, angle = 0)
+gradientDescent(0, 1)
 Animation = Animation(system)
 Animation.run(satellite, time = 0)
 
