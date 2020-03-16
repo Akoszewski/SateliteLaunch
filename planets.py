@@ -71,12 +71,12 @@ class Animation:
         set_fill_color(Color.BLACK)
         while is_run():
             if delay_jfps(40):
-                # dists.append(round(calcDistance(self.system.planets[1].r, self.system.planets[1].calculateTheta(time), self.system.planets[3].r, self.system.planets[3].calculateTheta(time)), 3))
                 if has_kb_hit():
                     isAnimation = True
                 clear_device()
                 self.__drawFrame(time)
                 if isAnimation:
+                    print(calculateDistance(satellite, self.system.planets[2], time))
                     time = time + 1
                 else:
                     draw_text(30, 30, 'Press any key to animate')
@@ -112,14 +112,17 @@ class Satellite:
         [vx, vy] = convToCartesian(self.vr, self.theta)
         return [x + vx * time, y + vy * time]
 
-def calcDistance(r1, theta1, r2, theta2):
-    return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(abs(theta2 - theta1)))
-
 def convToCartesian(r, theta):
     return [r * math.cos(theta), r * math.sin(theta)]
 
+def calculateDistance(satelite, planet, time):
+    planet_angle = planet.theta + 2*math.pi/planet.period * time
+    return math.sqrt((satelite.r*math.cos(satelite.theta) + satelite.vr*math.cos(satelite.theta)*time
+        - planet.r*math.cos(planet_angle))**2 + (satelite.r*math.sin(satelite.theta) + 
+        satelite.vr*math.sin(satelite.theta) - planet.r*math.sin(planet_angle))**2)
+
 system = System(5, 1.618)
-satellite = Satellite(system.planets[2], speed = 1, angle = 0)
+satellite = Satellite(system.planets[2], speed = 0, angle = 0)
 Animation = Animation(system)
 Animation.run(satellite, time = 0)
 
