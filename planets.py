@@ -1,5 +1,7 @@
 import math
 import random
+import json
+import os
 from easygraphics import *
 import matplotlib.pyplot as plt
 
@@ -20,11 +22,15 @@ class Planet:
 class System:
     planets = []
     def __init__(self, num, factor):
-        r = 50
-        for i in range(num):
-            theta = round(random.uniform(0, maxTheta), 3)
-            self.planets.append(Planet(r, theta))
-            r = round(r * factor)
+        if not os.path.isfile("planets.json"):
+            r = 50
+            for i in range(num):
+                theta = round(random.uniform(0, maxTheta), 3)
+                self.planets.append(Planet(r, theta))
+                r = round(r * factor)
+                self.dump()
+        else:
+            self.fromFile()
 
     def print(self):
         i = 1
@@ -34,6 +40,20 @@ class System:
             print("\ttheta = ", planet.theta)
             print("\tperiod = ", planet.period)
             i = i + 1
+
+    def dump(self):
+        with open("planets.json", 'w') as f:
+            serialized_planets = []
+            for p in self.planets:
+                serialized_planets.append({"r":p.r, "theta":p.theta, "period":p.period})
+            f.write(str(json.dumps(serialized_planets)))
+
+    def fromFile(self):
+        with open("planets.json", 'r') as f:
+            content = f.read()
+            planets = json.loads(content)
+            for p in planets:
+                self.planets.append(Planet(p["r"], p["theta"]))
 
 class Animation:
     rx = 800
@@ -94,7 +114,9 @@ class Satellite:
         vx += - planetRadius*planetOmega*math.sin(0)
         vy += planetRadius*planetOmega*math.cos(0)
         # print(math.sqrt(vx**2+vy**2))
-        return [x + vx*time, y + vy*time]
+        ax = 0
+        ay = 0
+        return [x + vx*time + ax*time**2/2, y + vy*time + ay*time**2/2]
 
 def calcDistance(r1, theta1, r2, theta2):
     return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(abs(theta2 - theta1)))
