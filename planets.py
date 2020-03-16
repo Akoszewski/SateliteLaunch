@@ -109,14 +109,8 @@ class Satellite:
 
     def calculatePosition(self, time):
         [x, y] = convToCartesian(self.r, self.theta)
-        vx = self.vr*math.cos(self.theta) - self.r*self.vth*math.sin(self.theta)
-        vy = self.vr*math.sin(self.theta) + self.r*self.vth*math.cos(self.theta)
-        vx += - planetRadius*planetOmega*math.sin(0)
-        vy += planetRadius*planetOmega*math.cos(0)
-        # print(math.sqrt(vx**2+vy**2))
-        ax = 0
-        ay = 0
-        return [x + vx*time + ax*time**2/2, y + vy*time + ay*time**2/2]
+        [vx, vy] = convToCartesian(self.vr, self.theta)
+        return [x + vx * time, y + vy * time]
 
 def calcDistance(r1, theta1, r2, theta2):
     return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(abs(theta2 - theta1)))
