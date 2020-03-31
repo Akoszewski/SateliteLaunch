@@ -11,6 +11,8 @@ maxTheta = 2*math.pi
 planetRadius = 0.012
 planetOmega = maxTheta
 
+GM = 0.1 # gravity constant times mass
+
 class Planet:
     def __init__(self, r, theta):
         self.r = r
@@ -65,6 +67,7 @@ class Animation:
         self.system = system
 
     def run(self, satellite, time):
+        self.prevTime = time
         self.satellite = satellite
         r = 0.45 * self.ry
         isAnimation = False
@@ -78,8 +81,9 @@ class Animation:
                 clear_device()
                 self.__drawFrame(time)
                 if isAnimation:
-                    print(calculateDistance(satellite, self.system.planets[3], time))
-                    print(time)
+                    # print(calculateDistance(satellite, self.system.planets[3], time))
+                    # print(time)
+                    self.prevTime = time
                     time = time + 1
                 else:
                     draw_text(30, 30, 'Press any key to animate')
@@ -95,13 +99,19 @@ class Animation:
             theta = p.calculateTheta(time)
             [x, y] = convToCartesian(r, theta)
             draw_circle(self.rx/2 + x, self.ry/2 + y, 5)
-        if self.satellite.vr != 0 and self.distanceToPixels(self.satellite.r) < self.rx: # optimization
-            self.trace.append(self.satellite.calculatePosition(time))
+        if self.satellite.vr != 0 and self.distanceToPixels(math.sqrt(self.satellite.x**2 + self.satellite.y**2)) < self.rx: # optimization
+            self.updateSatellite(time - self.prevTime)
+            self.trace.append([self.satellite.x, self.satellite.y])
         for pos in self.trace:
             [x, y] = pos
             x = self.distanceToPixels(x)
             y = self.distanceToPixels(y)
             draw_circle(self.rx/2 + x, self.ry/2 + y, 1)
+
+    def updateSatellite(self, interval):
+        # for planet in self.simu
+        [self.satellite.vx, self.satellite.vy] = [1, 1]
+        [self.satellite.x, self.satellite.y] = self.satellite.calculatePosition(interval) # get position next day
 
 class Satellite:
     def __init__(self, planet, speed, angle):
@@ -109,11 +119,12 @@ class Satellite:
         self.theta = planet.theta
         self.vr = speed
         self.vth = 2*math.pi/planet.period
+        [self.x, self.y] = convToCartesian(self.r, self.theta)
+        [self.vx, self.vy] = convToCartesian(self.vr, self.theta)
 
     def calculatePosition(self, time):
-        [x, y] = convToCartesian(self.r, self.theta)
         [vx, vy] = convToCartesian(self.vr, self.theta)
-        return [x + vx * time, y + vy * time]
+        return [self.x + self.vx * time, self.y + self.vy * time]
 
 def convToCartesian(r, theta):
     return [r * math.cos(theta), r * math.sin(theta)]
@@ -126,6 +137,9 @@ def calculateDistance(satelite, planet, time):
 
 def calculateDistancePolar(r1, theta1, r2, theta2):
     return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(theta2 - theta1))
+
+def calculateSquaredDistanceCart(x1, y1, x2, y2):
+    return (x1 - x2)**2 + (y1 - y2)**2
 
 def gradientDescent(x0, step):
     t = 0
@@ -164,7 +178,7 @@ def gradientDescent(x0, step):
 
 system = System(5, 1.618)
 satellite = Satellite(system.planets[1], speed = 1, angle = 0)
-gradientDescent(0, 1)
+# gradientDescent(0, 1)
 Animation = Animation(system)
 Animation.run(satellite, time = 0)
 
