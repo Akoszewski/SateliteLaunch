@@ -11,7 +11,7 @@ maxTheta = 2*math.pi
 planetRadius = 0.012
 planetOmega = maxTheta
 
-GM = 0.1 # gravity constant times mass
+GM = 100 # gravity constant times mass
 
 class Planet:
     def __init__(self, r, theta):
@@ -109,13 +109,25 @@ class Animation:
             draw_circle(self.rx/2 + x, self.ry/2 + y, 1)
 
     def updateSatellite(self, interval):
-        # for planet in self.simu
-        [self.satellite.vx, self.satellite.vy] = [1, 1]
+        [ax, ay] = [0, 0]
+        for planet in self.system.planets:
+            [px, py] = convToCartesian(planet.r, planet.calculateTheta(interval))
+            distance = calculateDistanceCart(self.satellite.x, self.satellite.y, px, py)
+            cos = (self.satellite.x - px)/distance
+            sin = (self.satellite.y - py)/distance
+            a = GM/(distance**2)
+            ax += a*cos
+            ay += a*sin
+        self.satellite.vx += ax*(interval**2)/2
+        self.satellite.vy += ay*(interval**2)/2
         [self.satellite.x, self.satellite.y] = self.satellite.calculatePosition(interval) # get position next day
+        print("position: " + str([self.satellite.x, self.satellite.y]))
+        print("velocity: " + str([self.satellite.vx, self.satellite.vy]))
+        print("acceleration: " + str([ax, ay]))
 
 class Satellite:
     def __init__(self, planet, speed, angle):
-        self.r = planet.r
+        self.r = planet.r + planetRadius
         self.theta = planet.theta
         self.vr = speed
         self.vth = 2*math.pi/planet.period
@@ -129,17 +141,17 @@ class Satellite:
 def convToCartesian(r, theta):
     return [r * math.cos(theta), r * math.sin(theta)]
 
-def calculateDistance(satelite, planet, time):
+def calculateDistance(satellite, planet, time):
     planet_angle = planet.theta + 2*math.pi/planet.period * time
-    return math.sqrt((satelite.r*math.cos(satelite.theta) + satelite.vr*math.cos(satelite.theta)*time
-        - planet.r*math.cos(planet_angle))**2 + (satelite.r*math.sin(satelite.theta) + 
-        satelite.vr*math.sin(satelite.theta) - planet.r*math.sin(planet_angle))**2)
+    return math.sqrt((satellite.r*math.cos(satellite.theta) + satellite.vr*math.cos(satellite.theta)*time
+        - planet.r*math.cos(planet_angle))**2 + (satellite.r*math.sin(satellite.theta) + 
+        satellite.vr*math.sin(satellite.theta) - planet.r*math.sin(planet_angle))**2)
 
 def calculateDistancePolar(r1, theta1, r2, theta2):
     return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(theta2 - theta1))
 
-def calculateSquaredDistanceCart(x1, y1, x2, y2):
-    return (x1 - x2)**2 + (y1 - y2)**2
+def calculateDistanceCart(x1, y1, x2, y2):
+    return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
 def gradientDescent(x0, step):
     t = 0
@@ -147,15 +159,15 @@ def gradientDescent(x0, step):
     times = []
     distances = []
     velocities = []
-    satelite = Satellite(system.planets[1], speed = 0.2, angle = 0)
+    satellite = Satellite(system.planets[1], speed = 0.2, angle = 0)
     while t < 1000:
         vel = 0.01
         dists = []
         vels = []
         tms = []
         while vel < 2:
-            satelite.vr = vel
-            d = calculateDistance(satelite, system.planets[3], t)
+            satellite.vr = vel
+            d = calculateDistance(satellite, system.planets[3], t)
             # print("t = " + str(t) + " d = " + str(d))
             tms.append(t)
             dists.append(d)
