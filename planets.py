@@ -11,7 +11,7 @@ maxTheta = 2*math.pi
 planetRadius = 0.012
 planetOmega = maxTheta
 
-GM = 100 # gravity constant times mass
+GM = 0.00297 # gravity constant times mass
 
 class Planet:
     def __init__(self, r, theta):
@@ -118,8 +118,15 @@ class Animation:
             a = GM/(distance**2)
             ax += a*cos
             ay += a*sin
-        self.satellite.vx += ax*(interval**2)/2
-        self.satellite.vy += ay*(interval**2)/2
+        [px, py] = [0, 0]
+        distance = calculateDistanceCart(self.satellite.x, self.satellite.y, px, py)
+        cos = (self.satellite.x - px)/distance
+        sin = (self.satellite.y - py)/distance
+        a = 989/(distance**2)
+        ax += a*cos
+        ay += a*sin
+        self.satellite.vx -= ax*(interval**2)/2
+        self.satellite.vy -= ay*(interval**2)/2
         [self.satellite.x, self.satellite.y] = self.satellite.calculatePosition(interval) # get position next day
         print("position: " + str([self.satellite.x, self.satellite.y]))
         print("velocity: " + str([self.satellite.vx, self.satellite.vy]))
@@ -133,6 +140,7 @@ class Satellite:
         self.vth = 2*math.pi/planet.period
         [self.x, self.y] = convToCartesian(self.r, self.theta)
         [self.vx, self.vy] = convToCartesian(self.vr, self.theta)
+        [self.vx, self.vy] = [3/math.sqrt(2), 3/math.sqrt(2)]
 
     def calculatePosition(self, time):
         [vx, vy] = convToCartesian(self.vr, self.theta)
@@ -187,7 +195,7 @@ def gradientDescent(x0, step):
     # plt.ylabel('distance')
     plt.show()
 
-
+#3.6387 # 3 predkosc kosmiczna
 system = System(5, 1.618)
 satellite = Satellite(system.planets[1], speed = 1, angle = 0)
 # gradientDescent(0, 1)
