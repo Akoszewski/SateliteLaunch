@@ -124,6 +124,9 @@ def calculateDistance(satelite, planet, time):
         - planet.r*math.cos(planet_angle))**2 + (satelite.r*math.sin(satelite.theta) + 
         satelite.vr*math.sin(satelite.theta) - planet.r*math.sin(planet_angle))**2)
 
+def calculateDistancePolar(r1, theta1, r2, theta2):
+    return math.sqrt(r1**2 + r2**2 - 2*r1*r2*math.cos(theta2 - theta1))
+
 def gradientDescent(x0, step):
     t = 0
     d = 0
