@@ -195,21 +195,29 @@ def calculateDistanceCart(x1, y1, x2, y2):
 
 #3.6387 # 3 predkosc kosmiczna
 
-step = 0.01
-def genAngle(trial):
-    return trial*step*2*math.pi
-def genSpeed(trial):
-    return step*5*trial
+missionTime = 300
+iterations = 200
+maxAngle = 2*math.pi
+maxSpeed = 4
+maxDelay = missionTime
+
+def genAngle(iteration):
+    return maxAngle/iterations * iteration
+def genSpeed(iteration):
+    return maxSpeed/iterations * iteration
+def genDelay(iteration):
+    # return maxDelay/iterations * iteration
+    return 0
 
 system = System(5, 1.618)
 bestDists = []
-for trial in range(100):
+for iteration in range(iterations):
     dists = []
     bestDist = 999999
     target = system.planets[3]
-    satellite = Satellite(system.planets[1], t0 = 0, speed = genSpeed(trial), angle = genAngle(trial))
+    satellite = Satellite(system.planets[1], t0 = genDelay(iteration), speed = genSpeed(iteration), angle = genAngle(iteration))
     animation = Animation(system, satellite)
-    for time in range(300):
+    for time in range(missionTime):
         if time >= animation.satellite.t0:
             animation.updateSatellite(time, 1)
         [tx, ty] = convToCartesian(target.r, target.calculateTheta(time))
@@ -218,14 +226,14 @@ for trial in range(100):
             bestDist = distance
         dists.append(distance)
     bestDists.append(bestDist)
-    if trial % 10 == 0:
-        print(str(trial + 1))
+    if iteration % 10 == 0:
+        print(str(iteration + 1))
 
 # satellite = Satellite(system.planets[1], t0 = 100, speed = 2, angle = math.pi*0.45*2)
 # Animation = Animation(system, satellite)
 # Animation.run(time = 0)
 
 plt.plot(bestDists)
-plt.xlabel('trial')
+plt.xlabel('iteration')
 plt.ylabel('distance')
 plt.show()
