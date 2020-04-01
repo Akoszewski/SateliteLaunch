@@ -198,26 +198,28 @@ def genAngle(trial):
     return trial*step*2*math.pi
 
 system = System(5, 1.618)
-dists = []
-bestDist = 999999
 bestDists = []
 for trial in range(100):
+    dists = []
+    bestDist = 999999
     target = system.planets[3]
     satellite = Satellite(system.planets[1], speed = 2, angle = genAngle(trial))
     animation = Animation(system, satellite)
-    for time in range(3000):
-        animation.updateSatellite(time, 0.5)
+    for time in range(300):
+        animation.updateSatellite(time, 1)
         [tx, ty] = convToCartesian(target.r, target.calculateTheta(time))
         distance = calculateDistanceCart(animation.satellite.x, animation.satellite.y, tx, ty)
         if (bestDist > distance):
             bestDist = distance
-        # dists.append(distance)
-    bestDists.append(distance)
-    print(str(trial + 1))
+        dists.append(distance)
+    bestDists.append(bestDist)
+    if trial % 10 == 0:
+        print(str(trial + 1))
 
-# satellite = Satellite(system.planets[1], speed = 2, angle = math.pi/4)
-# Animation = Animation(system, satellite)
-# Animation.run(time = 0)
+satellite = Satellite(system.planets[1], speed = 2, angle = math.pi*0.45*2)
+Animation = Animation(system, satellite)
+Animation.run(time = 0)
+
 plt.plot(bestDists)
 plt.xlabel('trial')
 plt.ylabel('distance')
