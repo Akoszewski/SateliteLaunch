@@ -98,8 +98,9 @@ class Animation:
             [x, y] = convToCartesian(r, theta)
             draw_circle(self.rx/2 + x, self.ry/2 + y, 5)
         if self.satellite.vr != 0 and self.distanceToPixels(math.sqrt(self.satellite.x**2 + self.satellite.y**2)) < self.rx: # optimization
-            self.updateSatellite(time, time - self.prevTime)
-            self.trace.append([self.satellite.x, self.satellite.y])
+            if time >= self.satellite.t0:
+                self.updateSatellite(time, time - self.prevTime)
+                self.trace.append([self.satellite.x, self.satellite.y])
         for pos in self.trace:
             [x, y] = pos
             x = self.distanceToPixels(x)
@@ -132,10 +133,11 @@ class Animation:
         
 
 class Satellite:
-    def __init__(self, planet, speed, angle):
+    def __init__(self, planet, t0, speed, angle):
         self.r = planet.r + planetRadius
         self.theta = planet.theta
         self.vr = speed
+        self.t0 = t0
         [self.x, self.y] = convToCartesian(self.r, self.theta)
         [self.vx, self.vy] = convToCartesian(self.vr, angle)
 
@@ -196,6 +198,8 @@ def calculateDistanceCart(x1, y1, x2, y2):
 step = 0.01
 def genAngle(trial):
     return trial*step*2*math.pi
+def genSpeed(trial):
+    return step*5*trial
 
 system = System(5, 1.618)
 bestDists = []
@@ -203,10 +207,11 @@ for trial in range(100):
     dists = []
     bestDist = 999999
     target = system.planets[3]
-    satellite = Satellite(system.planets[1], speed = 2, angle = genAngle(trial))
+    satellite = Satellite(system.planets[1], t0 = 0, speed = genSpeed(trial), angle = genAngle(trial))
     animation = Animation(system, satellite)
     for time in range(300):
-        animation.updateSatellite(time, 1)
+        if time >= animation.satellite.t0:
+            animation.updateSatellite(time, 1)
         [tx, ty] = convToCartesian(target.r, target.calculateTheta(time))
         distance = calculateDistanceCart(animation.satellite.x, animation.satellite.y, tx, ty)
         if (bestDist > distance):
@@ -216,9 +221,9 @@ for trial in range(100):
     if trial % 10 == 0:
         print(str(trial + 1))
 
-satellite = Satellite(system.planets[1], speed = 2, angle = math.pi*0.45*2)
-Animation = Animation(system, satellite)
-Animation.run(time = 0)
+# satellite = Satellite(system.planets[1], t0 = 100, speed = 2, angle = math.pi*0.45*2)
+# Animation = Animation(system, satellite)
+# Animation.run(time = 0)
 
 plt.plot(bestDists)
 plt.xlabel('trial')
