@@ -137,10 +137,8 @@ class Satellite:
         self.r = planet.r + planetRadius
         self.theta = planet.theta
         self.vr = speed
-        self.vth = 2*math.pi/planet.period
         [self.x, self.y] = convToCartesian(self.r, self.theta)
-        [self.vx, self.vy] = convToCartesian(self.vr, self.theta)
-        [self.vx, self.vy] = [3/math.sqrt(2), 3/math.sqrt(2)]
+        [self.vx, self.vy] = convToCartesian(self.vr, angle)
 
     def calculatePosition(self, time):
         [vx, vy] = convToCartesian(self.vr, self.theta)
@@ -197,7 +195,7 @@ def gradientDescent(x0, step):
 
 #3.6387 # 3 predkosc kosmiczna
 system = System(5, 1.618)
-satellite = Satellite(system.planets[1], speed = 1, angle = 0)
+satellite = Satellite(system.planets[1], speed = 3, angle = math.pi/4)
 # gradientDescent(0, 1)
 Animation = Animation(system)
 Animation.run(satellite, time = 0)
