@@ -11,6 +11,7 @@ maxTheta = 2*math.pi
 planetRadius = 0.012
 planetOmega = maxTheta
 
+# GM = 0.00297 * 1000000
 GM = 0.00297 # gravity constant times mass
 
 class Planet:
@@ -198,7 +199,7 @@ def calculateDistanceCart(x1, y1, x2, y2):
 missionTime = 300
 iterations = 50
 maxAngle = 2*math.pi
-maxSpeed = 4
+maxSpeed = 2
 maxDelay = missionTime
 
 def genAngle(iteration):
@@ -211,9 +212,14 @@ def genDelay(iteration):
     return 0
 
 system = System(5, 1.618)
-bestDists = []
+bestDists2D = []
+speeds2D = []
+angles2D = []
 iterationT0 = 0 # will be used better later
 for iterationAngle in range(iterations):
+    bestDists = []
+    speeds = []
+    angles = []
     for iterationSpeed in range(iterations):
         dists = []
         bestDist = 999999
@@ -229,14 +235,26 @@ for iterationAngle in range(iterations):
                 bestDist = distance
             dists.append(distance)
         bestDists.append(bestDist)
-    # if iteration % 10 == 0:
+        speeds.append(genSpeed(iterationSpeed))
+        angles.append(genAngle(iterationAngle))
+    bestDists2D.append(bestDists)
+    speeds2D.append(speeds)
+    angles2D.append(angles)
+
+# if iteration % 10 == 0:
     print(str(iterationAngle + 1))
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ax.plot_surface(np.array(angles2D), np.array(speeds2D), np.array(bestDists2D))
+# plt.xlabel('angle')
+# plt.zlabel('distance')
+plt.show()
 
 # satellite = Satellite(system.planets[1], t0 = 100, speed = 2, angle = math.pi*0.45*2)
 # Animation = Animation(system, satellite)
 # Animation.run(time = 0)
 
-plt.plot(bestDists)
-plt.xlabel('iteration')
-plt.ylabel('best distance')
-plt.show()
+# plt.plot(bestDists)
+# plt.xlabel('iteration')
+# plt.ylabel('best distance')
+# plt.show()
