@@ -100,7 +100,7 @@ class Animation:
             [x, y] = convToCartesian(r, theta)
             draw_circle(self.rx/2 + x, self.ry/2 + y, 5)
         if self.satellite.vr != 0 and self.distanceToPixels(math.sqrt(self.satellite.x**2 + self.satellite.y**2)) < self.rx: # optimization
-            self.updateSatellite(time - self.prevTime)
+            self.updateSatellite(time, time - self.prevTime)
             self.trace.append([self.satellite.x, self.satellite.y])
         for pos in self.trace:
             [x, y] = pos
@@ -108,10 +108,10 @@ class Animation:
             y = self.distanceToPixels(y)
             draw_circle(self.rx/2 + x, self.ry/2 + y, 1)
 
-    def updateSatellite(self, interval):
+    def updateSatellite(self, time, interval):
         [ax, ay] = [0, 0]
         for planet in self.system.planets:
-            [px, py] = convToCartesian(planet.r, planet.calculateTheta(interval))
+            [px, py] = convToCartesian(planet.r, planet.calculateTheta(time))
             distance = calculateDistanceCart(self.satellite.x, self.satellite.y, px, py)
             cos = (self.satellite.x - px)/distance
             sin = (self.satellite.y - py)/distance
@@ -131,6 +131,7 @@ class Animation:
         print("position: " + str([self.satellite.x, self.satellite.y]))
         print("velocity: " + str([self.satellite.vx, self.satellite.vy]))
         print("acceleration: " + str([ax, ay]))
+        
 
 class Satellite:
     def __init__(self, planet, speed, angle):
@@ -195,8 +196,13 @@ def gradientDescent(x0, step):
 
 #3.6387 # 3 predkosc kosmiczna
 system = System(5, 1.618)
+
+# for i in range(1000):
+#     satellite = Satellite(system.planets[1], speed = 3, angle = math.pi/4)
+#     Animation = Animation(system)
+#     animation.updateSatellite(1)
+
 satellite = Satellite(system.planets[1], speed = 3, angle = math.pi/4)
-# gradientDescent(0, 1)
 Animation = Animation(system)
 Animation.run(satellite, time = 0)
 
