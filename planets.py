@@ -63,12 +63,12 @@ class Animation:
     rx = 800
     ry = 600
     trace = [] # satellite trace
-    def __init__(self, system):
+    def __init__(self, system, satellite):
         self.system = system
-
-    def run(self, satellite, time):
-        self.prevTime = time
         self.satellite = satellite
+
+    def run(self, time):
+        self.prevTime = time
         r = 0.45 * self.ry
         isAnimation = False
         init_graph(self.rx, self.ry)
@@ -81,8 +81,6 @@ class Animation:
                 clear_device()
                 self.__drawFrame(time)
                 if isAnimation:
-                    # print(calculateDistance(satellite, self.system.planets[3], time))
-                    # print(time)
                     self.prevTime = time
                     time = time + 1
                 else:
@@ -128,9 +126,9 @@ class Animation:
         self.satellite.vx -= ax*(interval**2)/2
         self.satellite.vy -= ay*(interval**2)/2
         [self.satellite.x, self.satellite.y] = self.satellite.calculatePosition(interval) # get position next day
-        print("position: " + str([self.satellite.x, self.satellite.y]))
-        print("velocity: " + str([self.satellite.vx, self.satellite.vy]))
-        print("acceleration: " + str([ax, ay]))
+        # print("position: " + str([self.satellite.x, self.satellite.y]))
+        # print("velocity: " + str([self.satellite.vx, self.satellite.vy]))
+        # print("acceleration: " + str([ax, ay]))
         
 
 class Satellite:
@@ -142,7 +140,6 @@ class Satellite:
         [self.vx, self.vy] = convToCartesian(self.vr, angle)
 
     def calculatePosition(self, time):
-        [vx, vy] = convToCartesian(self.vr, self.theta)
         return [self.x + self.vx * time, self.y + self.vy * time]
 
 def convToCartesian(r, theta):
@@ -160,54 +157,68 @@ def calculateDistancePolar(r1, theta1, r2, theta2):
 def calculateDistanceCart(x1, y1, x2, y2):
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
-def gradientDescent(x0, step):
-    t = 0
-    d = 0
-    times = []
-    distances = []
-    velocities = []
-    satellite = Satellite(system.planets[1], speed = 0.2, angle = 0)
-    while t < 1000:
-        vel = 0.01
-        dists = []
-        vels = []
-        tms = []
-        while vel < 2:
-            satellite.vr = vel
-            d = calculateDistance(satellite, system.planets[3], t)
-            # print("t = " + str(t) + " d = " + str(d))
-            tms.append(t)
-            dists.append(d)
-            vels.append(vel)
-            vel = vel + step*0.05
-            # print("vel = " + str(vel))
-        distances.append(dists)
-        velocities.append(vels)
-        times.append(tms)
-        t = t + step
-        # print("t = " + str(t) + " d = " + str(d))
-    # plt.plot(data)
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    ax.plot_surface(np.array(times), np.array(velocities), np.array(distances))
-    # plt.xlabel('time')
-    # plt.ylabel('distance')
-    plt.show()
+# def gradientDescent(x0, step):
+#     t = 0
+#     d = 0
+#     times = []
+#     distances = []
+#     velocities = []
+#     satellite = Satellite(system.planets[1], speed = 0.2, angle = 0)
+#     while t < 1000:
+#         vel = 0.01
+#         dists = []
+#         vels = []
+#         tms = []
+#         while vel < 2:
+#             satellite.vr = vel
+#             d = calculateDistance(satellite, system.planets[3], t)
+#             # print("t = " + str(t) + " d = " + str(d))
+#             tms.append(t)
+#             dists.append(d)
+#             vels.append(vel)
+#             vel = vel + step*0.05
+#             # print("vel = " + str(vel))
+#         distances.append(dists)
+#         velocities.append(vels)
+#         times.append(tms)
+#         t = t + step
+#         # print("t = " + str(t) + " d = " + str(d))
+#     # plt.plot(data)
+#     fig = plt.figure()
+#     ax = fig.gca(projection='3d')
+#     ax.plot_surface(np.array(times), np.array(velocities), np.array(distances))
+#     # plt.xlabel('time')
+#     # plt.ylabel('distance')
+#     plt.show()
 
 #3.6387 # 3 predkosc kosmiczna
 
+step = 0.01
+def genAngle(trial):
+    return trial*step*2*math.pi
+
 system = System(5, 1.618)
+dists = []
+bestDist = 999999
+bestDists = []
+for trial in range(100):
+    target = system.planets[3]
+    satellite = Satellite(system.planets[1], speed = 2, angle = genAngle(trial))
+    animation = Animation(system, satellite)
+    for time in range(3000):
+        animation.updateSatellite(time, 0.5)
+        [tx, ty] = convToCartesian(target.r, target.calculateTheta(time))
+        distance = calculateDistanceCart(animation.satellite.x, animation.satellite.y, tx, ty)
+        if (bestDist > distance):
+            bestDist = distance
+        # dists.append(distance)
+    bestDists.append(distance)
+    print(str(trial + 1))
 
-# for i in range(1000):
-#     satellite = Satellite(system.planets[2], speed = 2, angle = math.pi/4)
-#     Animation = Animation(system)
-#     animation.updateSatellite(1)
-
-satellite = Satellite(system.planets[2], speed = 2, angle = math.pi/4)
-Animation = Animation(system)
-Animation.run(satellite, time = 0)
-
-# plt.plot(dists)
-# plt.ylabel('time')
-# plt.ylabel('distance')
-# plt.show()
+# satellite = Satellite(system.planets[1], speed = 2, angle = math.pi/4)
+# Animation = Animation(system, satellite)
+# Animation.run(time = 0)
+plt.plot(bestDists)
+plt.xlabel('trial')
+plt.ylabel('distance')
+plt.show()
