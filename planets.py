@@ -118,13 +118,13 @@ class Animation:
             a = GM/(distance**2)
             ax += a*cos
             ay += a*sin
-        [px, py] = [0, 0]
-        distance = calculateDistanceCart(self.satellite.x, self.satellite.y, px, py)
-        cos = (self.satellite.x - px)/distance
-        sin = (self.satellite.y - py)/distance
-        a = 989/(distance**2)
-        ax += a*cos
-        ay += a*sin
+        # [px, py] = [0, 0]
+        # distance = calculateDistanceCart(self.satellite.x, self.satellite.y, px, py)
+        # cos = (self.satellite.x - px)/distance
+        # sin = (self.satellite.y - py)/distance
+        # a = 989/(distance**2)
+        # ax += a*cos
+        # ay += a*sin
         self.satellite.vx -= ax*(interval**2)/2
         self.satellite.vy -= ay*(interval**2)/2
         [self.satellite.x, self.satellite.y] = self.satellite.calculatePosition(interval) # get position next day
@@ -195,14 +195,15 @@ def gradientDescent(x0, step):
     plt.show()
 
 #3.6387 # 3 predkosc kosmiczna
+
 system = System(5, 1.618)
 
 # for i in range(1000):
-#     satellite = Satellite(system.planets[1], speed = 3, angle = math.pi/4)
+#     satellite = Satellite(system.planets[2], speed = 2, angle = math.pi/4)
 #     Animation = Animation(system)
 #     animation.updateSatellite(1)
 
-satellite = Satellite(system.planets[1], speed = 3, angle = math.pi/4)
+satellite = Satellite(system.planets[2], speed = 2, angle = math.pi/4)
 Animation = Animation(system)
 Animation.run(satellite, time = 0)
 
