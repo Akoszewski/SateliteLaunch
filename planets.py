@@ -131,6 +131,17 @@ class Animation:
         # print("position: " + str([self.satellite.x, self.satellite.y]))
         # print("velocity: " + str([self.satellite.vx, self.satellite.vy]))
         # print("acceleration: " + str([ax, ay]))
+
+    def simulateFlight(self, missionTime, target):
+        bestDist = 999999
+        for time in range(missionTime):
+            if time >= self.satellite.t0:
+                self.updateSatellite(time, 1)
+            [tx, ty] = convToCartesian(target.r, target.calculateTheta(time))
+            distance = calculateDistanceCart(self.satellite.x, self.satellite.y, tx, ty)
+            if (bestDist > distance):
+                bestDist = distance
+        return bestDist
         
 
 class Satellite:
@@ -267,13 +278,7 @@ for iteration in range(iterations):
     target = system.planets[2]
     satellite = Satellite(system.planets[4], t0 = 0, speed = speed, angle = angle)
     animation = Animation(system, satellite)
-    for time in range(missionTime):
-        if time >= animation.satellite.t0:
-            animation.updateSatellite(time, 1)
-        [tx, ty] = convToCartesian(target.r, target.calculateTheta(time))
-        distance = calculateDistanceCart(animation.satellite.x, animation.satellite.y, tx, ty)
-        if (bestDist > distance):
-            bestDist = distance
+    bestDist = animation.simulateFlight(missionTime, target)
     dists.append(bestDist)
     # t0_array.append(genDelay(dists, iteration, t0_array))
 
