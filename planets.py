@@ -132,7 +132,7 @@ class Animation:
         # print("velocity: " + str([self.satellite.vx, self.satellite.vy]))
         # print("acceleration: " + str([ax, ay]))
 
-    def simulateFlight(self, missionTime, target):
+    def SimulateFlight(self, missionTime, target):
         bestDist = 999999
         for time in range(missionTime):
             if time >= self.satellite.t0:
@@ -175,64 +175,6 @@ def calculateDistanceCart(x1, y1, x2, y2):
 
 #3.6387 # 3 predkosc kosmiczna
 
-missionTime = 500
-iterations = 50
-maxAngle = 2*math.pi
-maxSpeed = 1.5
-maxDelay = missionTime
-
-# def genAngle(iteration):
-#     return maxAngle/iterations * iteration
-# def genSpeed(iteration):
-#     return maxSpeed/iterations * iteration
-#     # return 2
-# def genDelay(iteration):
-#     # return maxDelay/iterations * iteration
-#     return 0
-
-system = System(5, 1.618)
-bestDists2D = []
-speeds2D = []
-angles2D = []
-iterationT0 = 0 # will be used better later
-# for iterationAngle in range(iterations):
-#     bestDists = []
-#     speeds = []
-#     angles = []
-#     for iterationSpeed in range(iterations):
-#         dists = []
-#         bestDist = 999999
-#         target = system.planets[2]
-#         satellite = Satellite(system.planets[4], t0 = genDelay(iterationT0), speed = genSpeed(iterationSpeed), angle = genAngle(iterationAngle))
-#         animation = Animation(system, satellite)
-#         for time in range(missionTime):
-#             if time >= animation.satellite.t0:
-#                 animation.updateSatellite(time, 1)
-#             [tx, ty] = convToCartesian(target.r, target.calculateTheta(time))
-#             distance = calculateDistanceCart(animation.satellite.x, animation.satellite.y, tx, ty)
-#             if (bestDist > distance):
-#                 bestDist = distance
-#             dists.append(distance)
-#         bestDists.append(bestDist)
-#         speeds.append(genSpeed(iterationSpeed))
-#         angles.append(genAngle(iterationAngle))
-#     bestDists2D.append(bestDists)
-#     speeds2D.append(speeds)
-#     angles2D.append(angles)
-
-# if iteration % 10 == 0:
-#     print(str(iterationAngle + 1))
-# fig = plt.figure()
-# ax = fig.gca(projection='3d')
-# ax.plot_surface(np.array(angles2D), np.array(speeds2D), np.array(bestDists2D))
-# # plt.xlabel('angle')
-# # plt.zlabel('distance')
-# plt.show()
-
-# satellite = Satellite(system.planets[4], t0 = 0, speed = 0.2, angle = 0)
-# Animation = Animation(system, satellite)
-# Animation.run(time = 0)
-
 def randomGaussian(mu, sigma): # randomizing with Box-Muller transform
     r1 = random.random()
     r2 = random.random()
@@ -249,17 +191,16 @@ def genSpeedStep():
 def genDelayStep():
     return maxDelay/iterations
 
-# gaussians = []
-# for i in range(100):
-#     gaussians.append(randomGaussian(0, 4))
-#     # gaussians.append(random.random())
-# plt.plot(gaussians)
-# plt.xlabel('iteration')
-# plt.ylabel('gaussian')
-# plt.show()
-
 def mutate(x, sigma):
     return x + randomGaussian(0, sigma)
+
+missionTime = 500
+iterations = 50
+maxAngle = 2*math.pi
+maxSpeed = 1.5
+maxDelay = missionTime
+
+system = System(5, 1.618)
 
 speed = maxSpeed/2
 angle = maxAngle/2
@@ -271,16 +212,12 @@ for iteration in range(iterations):
     t0_array = []
     angles = []
     speeds = []
-    # t0_array.append(missionTime/2)
-    # speeds.append(maxSpeed/2)
-    # angles.append(maxAngle/2)
     bestDist = 999999
     target = system.planets[2]
     satellite = Satellite(system.planets[4], t0 = 0, speed = speed, angle = angle)
     animation = Animation(system, satellite)
-    bestDist = animation.simulateFlight(missionTime, target)
+    bestDist = animation.SimulateFlight(missionTime, target)
     dists.append(bestDist)
-    # t0_array.append(genDelay(dists, iteration, t0_array))
 
     if iteration > 0:
         if dists[iteration - 1] <= dists[iteration]:
@@ -292,8 +229,6 @@ for iteration in range(iterations):
 
     prevAngle = angle
     prevSpeed = speed
-    # angles.append(genAngle(dists, iteration, angles))
-    # speeds.append(genSpeed(dists, iteration, speeds))
 
 plt.plot(dists)
 plt.xlabel('iteration')
