@@ -204,8 +204,6 @@ system = System(5, 1.618)
 
 speed = maxSpeed/2
 angle = maxAngle/2
-prevSpeed = speed
-prevAngle = angle
 t0 = 0
 dists = []
 for iteration in range(iterations):
@@ -214,21 +212,23 @@ for iteration in range(iterations):
     speeds = []
     bestDist = 999999
     target = system.planets[2]
+
+    speedMutated = mutate(speed, genSpeedStep()/2)
+    angleMutated = mutate(speed, genAngleStep()/2)
+
+    satellite = Satellite(system.planets[4], t0 = 0, speed = speedMutated, angle = angleMutated)
+    animation = Animation(system, satellite)
+    bestDistT = animation.SimulateFlight(missionTime, target)
+
     satellite = Satellite(system.planets[4], t0 = 0, speed = speed, angle = angle)
     animation = Animation(system, satellite)
-    bestDist = animation.SimulateFlight(missionTime, target)
-    dists.append(bestDist)
+    bestDistX = animation.SimulateFlight(missionTime, target)
 
-    if iteration > 0:
-        if dists[iteration - 1] <= dists[iteration]:
-            speed = mutate(speed, genSpeedStep())
-            angle = mutate(speed, genAngleStep())
-    else:
-        speed = mutate(speed, genSpeedStep())
-        angle = mutate(speed, genAngleStep())
+    if bestDistT < bestDistX:
+        speed = speedMutated
+        angle = angleMutated
 
-    prevAngle = angle
-    prevSpeed = speed
+    dists.append(bestDistX)
 
 plt.plot(dists)
 plt.xlabel('iteration')
