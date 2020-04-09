@@ -151,8 +151,8 @@ class Satellite:
         self.vr = speed
         self.t0 = t0
         [self.x, self.y] = convToCartesian(self.r, self.theta)
-        print("speed: " + str(speed))
-        print("angle: " + str(angle))
+        # print("speed: " + str(speed))
+        # print("angle: " + str(angle))
         [self.vx, self.vy] = convToCartesian(self.vr, angle)
 
     def calculatePosition(self, time):
@@ -194,11 +194,13 @@ def genDelayStep():
 def mutate(x, sigma):
     return x + randomGaussian(0, sigma)
 
-missionTime = 500
-iterations = 50
+missionTime = 800
+iterations = 4000
 maxAngle = 2*math.pi
 maxSpeed = 1.5
 maxDelay = missionTime
+
+initialTemp = iterations/10
 
 system = System(5, 1.618)
 
@@ -206,15 +208,21 @@ speed = maxSpeed/2
 angle = maxAngle/2
 t0 = 0
 dists = []
+
+speedBest = speed
+angleBest = angle
+T = initialTemp
 for iteration in range(iterations):
+    if T == 0:
+        break
     t0_array = []
     angles = []
     speeds = []
     bestDist = 999999
     target = system.planets[2]
 
-    speedMutated = mutate(speed, genSpeedStep()/2)
-    angleMutated = mutate(speed, genAngleStep()/2)
+    speedMutated = mutate(speed, genSpeedStep())
+    angleMutated = mutate(angle, genAngleStep())
 
     satellite = Satellite(system.planets[4], t0 = 0, speed = speedMutated, angle = angleMutated)
     animation = Animation(system, satellite)
@@ -224,11 +232,28 @@ for iteration in range(iterations):
     animation = Animation(system, satellite)
     bestDistX = animation.SimulateFlight(missionTime, target)
 
-    if bestDistT < bestDistX:
+    satellite = Satellite(system.planets[4], t0 = 0, speed = speedBest, angle = angleBest)
+    animation = Animation(system, satellite)
+    bestDistBestargs = animation.SimulateFlight(missionTime, target)
+
+    if bestDistT < bestDistX or randomGaussian(0, 1) < math.exp((bestDistX - bestDistT)/T):
         speed = speedMutated
         angle = angleMutated
 
-    dists.append(bestDistX)
+    satellite = Satellite(system.planets[4], t0 = 0, speed = speed, angle = angle)
+    animation = Animation(system, satellite)
+    bestDistX = animation.SimulateFlight(missionTime, target)
+
+    if bestDistX < bestDistBestargs:
+        speedBest = speed
+        angleBest = angle
+
+    T = T - 1/10
+
+    dists.append(bestDistBestargs)
+
+    if (iteration % 10) == 0:
+        print(iteration)
 
 plt.plot(dists)
 plt.xlabel('iteration')
