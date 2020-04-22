@@ -194,13 +194,18 @@ def genDelayStep():
 def mutate(x, sigma):
     return x + randomGaussian(0, sigma)
 
+def cooling(temp, initTemp, iterations):
+    t = temp - initTemp/iterations
+    print("Temp: " + str(t))
+    return t
+
 missionTime = 800
-iterations = 4000
+iterations = 500
 maxAngle = 2*math.pi
 maxSpeed = 1.5
 maxDelay = missionTime
 
-initialTemp = iterations/10
+initialTemp = 500
 
 system = System(5, 1.618)
 
@@ -219,20 +224,20 @@ for iteration in range(iterations):
     angles = []
     speeds = []
     bestDist = 999999
-    target = system.planets[2]
+    target = system.planets[1]
 
     speedMutated = mutate(speed, genSpeedStep())
     angleMutated = mutate(angle, genAngleStep())
 
-    satellite = Satellite(system.planets[4], t0 = 0, speed = speedMutated, angle = angleMutated)
+    satellite = Satellite(system.planets[2], t0 = 0, speed = speedMutated, angle = angleMutated)
     animation = Animation(system, satellite)
     bestDistT = animation.SimulateFlight(missionTime, target)
 
-    satellite = Satellite(system.planets[4], t0 = 0, speed = speed, angle = angle)
+    satellite = Satellite(system.planets[2], t0 = 0, speed = speed, angle = angle)
     animation = Animation(system, satellite)
     bestDistX = animation.SimulateFlight(missionTime, target)
 
-    satellite = Satellite(system.planets[4], t0 = 0, speed = speedBest, angle = angleBest)
+    satellite = Satellite(system.planets[2], t0 = 0, speed = speedBest, angle = angleBest)
     animation = Animation(system, satellite)
     bestDistBestargs = animation.SimulateFlight(missionTime, target)
 
@@ -240,7 +245,7 @@ for iteration in range(iterations):
         speed = speedMutated
         angle = angleMutated
 
-    satellite = Satellite(system.planets[4], t0 = 0, speed = speed, angle = angle)
+    satellite = Satellite(system.planets[2], t0 = 0, speed = speed, angle = angle)
     animation = Animation(system, satellite)
     bestDistX = animation.SimulateFlight(missionTime, target)
 
@@ -248,7 +253,7 @@ for iteration in range(iterations):
         speedBest = speed
         angleBest = angle
 
-    T = T - 1/10
+    T = cooling(T, initialTemp, iterations)
 
     dists.append(bestDistBestargs)
 
