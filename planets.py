@@ -173,8 +173,6 @@ def calculateDistancePolar(r1, theta1, r2, theta2):
 def calculateDistanceCart(x1, y1, x2, y2):
     return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
-#3.6387 # 3 predkosc kosmiczna
-
 def randomGaussian(mu, sigma): # randomizing with Box-Muller transform
     r1 = random.random()
     r2 = random.random()
@@ -185,18 +183,19 @@ def randomGaussian(mu, sigma): # randomizing with Box-Muller transform
     return x1
 
 def genAngleStep():
-    return maxAngle/iterations
+    return maxAngle/iterations * 20
 def genSpeedStep():
-    return maxSpeed/iterations
+    return maxSpeed/iterations * 20
 def genDelayStep():
     return maxDelay/iterations
 
-def mutate(x, sigma):
+def mutate(x, maxx, sigma):
     return x + randomGaussian(0, sigma)
-
+    
 def cooling(temp, initTemp, iterations):
     t = temp - initTemp/iterations
-    print("Temp: " + str(t))
+    if temp % 10 == 0:
+        print("Temp: " + str(t))
     return t
 
 missionTime = 800
@@ -205,14 +204,17 @@ maxAngle = 2*math.pi
 maxSpeed = 1.5
 maxDelay = missionTime
 
-initialTemp = 500
+initialTemp = 5000
 
 system = System(5, 1.618)
 
 speed = maxSpeed/2
-angle = maxAngle/2
+angle = 0
 t0 = 0
 dists = []
+
+angles = []
+speeds = []
 
 speedBest = speed
 angleBest = angle
@@ -221,13 +223,11 @@ for iteration in range(iterations):
     if T == 0:
         break
     t0_array = []
-    angles = []
-    speeds = []
     bestDist = 999999
     target = system.planets[1]
 
-    speedMutated = mutate(speed, genSpeedStep())
-    angleMutated = mutate(angle, genAngleStep())
+    speedMutated = mutate(speed, maxSpeed, genSpeedStep())
+    angleMutated = mutate(angle, maxAngle, genAngleStep())
 
     satellite = Satellite(system.planets[2], t0 = 0, speed = speedMutated, angle = angleMutated)
     animation = Animation(system, satellite)
@@ -257,6 +257,9 @@ for iteration in range(iterations):
 
     dists.append(bestDistBestargs)
 
+    angles.append(angleBest)
+    speeds.append(speedBest)
+
     if (iteration % 10) == 0:
         print(iteration)
 
@@ -264,3 +267,17 @@ plt.plot(dists)
 plt.xlabel('iteration')
 plt.ylabel('best distance')
 plt.show()
+
+plt.plot(angles)
+plt.xlabel('iteration')
+plt.ylabel('best angle')
+plt.show()
+
+plt.plot(speeds)
+plt.xlabel('iteration')
+plt.ylabel('best speed')
+plt.show()
+
+satellite = Satellite(system.planets[2], t0 = 0, speed = speeds[-1], angle = angles[-1])
+animation = Animation(system, satellite)
+animation.run(0)
