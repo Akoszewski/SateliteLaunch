@@ -2,10 +2,8 @@ import math
 import random
 import json
 import os
-import numpy as np
 from easygraphics import *
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 maxTheta = 2*math.pi
 planetRadius = 0.012
@@ -182,6 +180,9 @@ def randomGaussian(mu, sigma): # randomizing with Box-Muller transform
     x2 = mu + z2 * sigma
     return x1
 
+
+
+
 def genAngleStep():
     return maxAngle/iterations * 20
 def genSpeedStep():
@@ -190,7 +191,10 @@ def genDelayStep():
     return maxDelay/iterations * 20
 
 def mutate(x, maxx, sigma):
-    return x + randomGaussian(0, sigma)
+    mutated = x + randomGaussian(0, sigma)
+    if mutated > maxx:
+        mutated = maxx
+    return mutated
     
 def cooling(temp, initTemp, iterations):
     t = temp - initTemp/iterations
@@ -220,37 +224,45 @@ speedBest = speed
 angleBest = angle
 t0Best = t0
 
+target = 4
+startingPoint = 1
+
+bestDist = 999999
+
+targetDist = 4 # minimal distance to fly near the target planet
+
 T = initialTemp
 for iteration in range(iterations):
     if T == 0:
         break
-    bestDist = 999999
-    target = system.planets[1]
+    if len(dists) > 0:
+        if dists[-1] <= targetDist:
+            break
 
     speedMutated = mutate(speed, maxSpeed, genSpeedStep())
     angleMutated = mutate(angle, maxAngle, genAngleStep())
     t0Mutated = mutate(t0, maxDelay, genDelayStep())
 
-    satellite = Satellite(system.planets[2], t0 = t0Mutated, speed = speedMutated, angle = angleMutated)
+    satellite = Satellite(system.planets[startingPoint], t0 = t0Mutated, speed = speedMutated, angle = angleMutated)
     animation = Animation(system, satellite)
-    bestDistT = animation.SimulateFlight(missionTime, target)
+    bestDistT = animation.SimulateFlight(missionTime, system.planets[target])
 
-    satellite = Satellite(system.planets[2], t0 = t0, speed = speed, angle = angle)
+    satellite = Satellite(system.planets[startingPoint], t0 = t0, speed = speed, angle = angle)
     animation = Animation(system, satellite)
-    bestDistX = animation.SimulateFlight(missionTime, target)
+    bestDistX = animation.SimulateFlight(missionTime, system.planets[target])
 
-    satellite = Satellite(system.planets[2], t0 = t0Best, speed = speedBest, angle = angleBest)
+    satellite = Satellite(system.planets[startingPoint], t0 = t0Best, speed = speedBest, angle = angleBest)
     animation = Animation(system, satellite)
-    bestDistBestargs = animation.SimulateFlight(missionTime, target)
+    bestDistBestargs = animation.SimulateFlight(missionTime, system.planets[target])
 
     if bestDistT < bestDistX or randomGaussian(0, 1) < math.exp((bestDistX - bestDistT)/T):
         speed = speedMutated
         angle = angleMutated
         t0 = t0Mutated
 
-    satellite = Satellite(system.planets[2], t0 = t0, speed = speed, angle = angle)
+    satellite = Satellite(system.planets[startingPoint], t0 = t0, speed = speed, angle = angle)
     animation = Animation(system, satellite)
-    bestDistX = animation.SimulateFlight(missionTime, target)
+    bestDistX = animation.SimulateFlight(missionTime, system.planets[target])
 
     if bestDistX < bestDistBestargs:
         speedBest = speed
@@ -288,7 +300,8 @@ plt.xlabel('iteration')
 plt.ylabel('best t0')
 plt.show()
 
-satellite = Satellite(system.planets[2], t0 = t0s[-1], speed = speeds[-1], angle = angles[-1])
+satellite = Satellite(system.planets[startingPoint], t0 = t0s[-1], speed = speeds[-1], angle = angles[-1])
+print("Distance: " + str(dists[-1]) + " launch time: " + str(t0s[-1]) + " speed: " + str(speeds[-1]) + " angle: " + str(angles[-1]))
 animation = Animation(system, satellite)
 # dist = animation.SimulateFlight(missionTime, system.planets[1])
 # print(round(dist))
