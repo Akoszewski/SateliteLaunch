@@ -6,11 +6,11 @@ from easygraphics import *
 import matplotlib.pyplot as plt
 
 maxTheta = 2*math.pi
-planetRadius = 0.012
+planetRadius = 0.012 # comparable to Earth radius, satellite starts from here (not from the center)
 planetOmega = maxTheta
 
-# GM = 0.00297 * 1000000
 GM = 0.00297 # gravity constant times mass
+isStar = True
 
 class Planet:
     def __init__(self, r, theta):
@@ -116,19 +116,17 @@ class Animation:
             a = GM/(distance**2)
             ax += a*cos
             ay += a*sin
-        # [px, py] = [0, 0]
-        # distance = calculateDistanceCart(self.satellite.x, self.satellite.y, px, py)
-        # cos = (self.satellite.x - px)/distance
-        # sin = (self.satellite.y - py)/distance
-        # a = 989/(distance**2)
-        # ax += a*cos
-        # ay += a*sin
+        if isStar == True:
+            [px, py] = [0, 0]
+            distance = calculateDistanceCart(self.satellite.x, self.satellite.y, px, py)
+            cos = (self.satellite.x - px)/distance
+            sin = (self.satellite.y - py)/distance
+            a = 989/(distance**2)
+            ax += a*cos
+            ay += a*sin
         self.satellite.vx -= ax*(interval**2)/2
         self.satellite.vy -= ay*(interval**2)/2
         [self.satellite.x, self.satellite.y] = self.satellite.calculatePosition(interval) # get position next day
-        # print("position: " + str([self.satellite.x, self.satellite.y]))
-        # print("velocity: " + str([self.satellite.vx, self.satellite.vy]))
-        # print("acceleration: " + str([ax, ay]))
 
     def SimulateFlight(self, missionTime, target):
         bestDist = 999999
@@ -149,8 +147,6 @@ class Satellite:
         self.vr = speed
         self.t0 = t0
         [self.x, self.y] = convToCartesian(self.r, self.theta)
-        # print("speed: " + str(speed))
-        # print("angle: " + str(angle))
         [self.vx, self.vy] = convToCartesian(self.vr, angle)
 
     def calculatePosition(self, time):
@@ -180,8 +176,7 @@ def randomGaussian(mu, sigma): # randomizing with Box-Muller transform
     x2 = mu + z2 * sigma
     return x1
 
-
-
+ #### THE ALGORITHM ####
 
 def genAngleStep():
     return maxAngle/iterations * 20
@@ -194,6 +189,8 @@ def mutate(x, maxx, sigma):
     mutated = x + randomGaussian(0, sigma)
     if mutated > maxx:
         mutated = maxx
+    if mutated < 0:
+        mutated = 0
     return mutated
     
 def cooling(temp, initTemp, iterations):
@@ -224,12 +221,10 @@ speedBest = speed
 angleBest = angle
 t0Best = t0
 
-target = 4
-startingPoint = 1
+target = 1
+startingPoint = 3
 
-bestDist = 999999
-
-targetDist = 4 # minimal distance to fly near the target planet
+targetDist = 4 # minimal distance to fly near the target planet (stops the algorithm)
 
 T = initialTemp
 for iteration in range(iterations):
@@ -303,6 +298,6 @@ plt.show()
 satellite = Satellite(system.planets[startingPoint], t0 = t0s[-1], speed = speeds[-1], angle = angles[-1])
 print("Distance: " + str(dists[-1]) + " launch time: " + str(t0s[-1]) + " speed: " + str(speeds[-1]) + " angle: " + str(angles[-1]))
 animation = Animation(system, satellite)
-# dist = animation.SimulateFlight(missionTime, system.planets[1])
-# print(round(dist))
 animation.run(0)
+
+# system.print() # prints the planets

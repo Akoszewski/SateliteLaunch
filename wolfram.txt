@@ -1,1 +1,0 @@
-sqrt((r*cos(φ) + v*cos(φ)*t - R*cos(θ+ω*t))^2 + (r*sin(φ) + v*sin(φ)*t - R*sin(θ+ω*t))^2)
